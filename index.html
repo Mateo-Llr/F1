@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>F1 — Saison</title>
+  <link rel="icon" href="icon.ico" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">
+        <img src="assets/f1.png" alt="Logo F1" class="logo-img">
+      </div>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-view="courses">Accueil</button>
+      <button class="nav-btn" data-view="season">Saison</button>
+      <button class="nav-btn" data-view="drivers">Conducteurs</button>
+      <button class="nav-btn" data-view="teams">Écuries</button>
+      <button class="nav-btn" data-view="lineup">Line-up</button>
+    </nav>
+    <div class="header-controls">
+      <div class="header-season-picker">
+        <div class="season-select-wrap">
+          <select id="seasonSelect" class="season-select" aria-label="Choisir une saison"></select>
+        </div>
+      </div>
+      <button id="musicToggle" class="play-btn">▶ Play music</button>
+      <audio id="bgMusic" loop src="assets/radio.mp3"></audio>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ CHARGEMENT ============ -->
+    <section id="data-loader-view">
+      <h2>Chargement des données de la saison</h2>
+      <p id="loadingStatus" class="muted">Chargement automatique des données…</p>
+      <button id="retryDataLoadBtn" class="primary hidden" style="margin-top:20px">Réessayer</button>
+    </section>
+
+    <!-- ============ ACCUEIL ============ -->
+    <section id="view-courses">
+      <div class="main-banner">
+        <div class="checker-flag" id="checkerFlag" aria-hidden="true"></div>
+        <div class="banner-overlay">
+          <h1>Saison <em id="bannerYear">2026</em></h1>
+        </div>
+      </div>
+
+      <div id="nextHero"></div>
+
+      <div class="section-head">
+        <h3 id="nextRacesTitle">Prochains Grands Prix</h3>
+        <span class="section-line"></span>
+      </div>
+      <div class="next-races-list" id="nextRacesList"></div>
+
+      <div class="section-head">
+        <h3>Top 5 du championnat</h3>
+        <span class="section-line"></span>
+        <button class="btn-skew ghost" data-view="season">Classement complet</button>
+      </div>
+      <div class="rank-list home-podium" id="homeStandings"></div>
+    </section>
+
+    <!-- ============ SAISON ============ -->
+    <section id="view-season" class="hidden">
+      <div class="page-head">
+        <div>
+          <span class="kicker">Championnat du monde</span>
+          <h2>Saison <em id="seasonYearLabel">2026</em></h2>
+        </div>
+        <div class="season-toolbar">
+          <div class="season-progress">
+            <div class="sp-text"><b id="spDone">0</b><span> / <span id="spTotal">0</span> GP disputés</span></div>
+            <div class="sp-bar"><i id="spFill"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="season-layout">
+        <div class="season-calendar">
+          <div class="toolbar">
+            <h3>Calendrier</h3>
+            <div class="chips" id="raceFilters">
+              <button class="chip active" data-filter="all">Toutes</button>
+              <button class="chip" data-filter="done">Terminées</button>
+              <button class="chip" data-filter="todo">À venir</button>
+            </div>
+          </div>
+          <div class="season-races-list" id="seasonRacesList"></div>
+        </div>
+
+        <div class="season-ranking-container">
+          <div class="toolbar">
+            <div class="chips" id="rankTabs">
+              <button class="chip active" data-rank="drivers">Pilotes</button>
+              <button class="chip" data-rank="teams">Écuries</button>
+            </div>
+            <div class="rank-sub" id="rankSub"></div>
+          </div>
+          <div class="rank-wrap">
+            <div class="rank-vertical"><span id="rankVertical">Classement</span></div>
+            <div class="rank-list" id="rankingList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONDUCTEURS ============ -->
+    <section id="view-drivers" class="hidden">
+      <div class="page-head">
+        <div>
+          <span class="kicker">Le paddock</span>
+          <h2>Conduc<em>teurs</em></h2>
+        </div>
+        <div class="toolbar-inline">
+          <input type="search" id="driverSearch" class="search" placeholder="Rechercher un pilote…">
+          <div class="chips" id="driverFilters">
+            <button class="chip active" data-dfilter="all">Tous</button>
+            <button class="chip" data-dfilter="active">Actifs</button>
+            <button class="chip" data-dfilter="past">Historique</button>
+          </div>
+        </div>
+      </div>
+      <div class="drivers-grid" id="driversGrid"></div>
+    </section>
+
+    <!-- ============ ÉCURIES ============ -->
+    <section id="view-teams" class="hidden">
+      <div class="page-head">
+        <div>
+          <span class="kicker">Les constructeurs</span>
+          <h2>Écu<em>ries</em></h2>
+        </div>
+      </div>
+      <div class="teams-grid" id="teamsGrid"></div>
+      <div id="teamDetail" class="hidden">
+        <button id="backToTeams" class="btn-skew ghost" style="margin-bottom:20px">← Retour aux écuries</button>
+        <div id="teamDetailBody"></div>
+      </div>
+    </section>
+
+    <!-- ============ LINE-UP ============ -->
+    <section id="view-lineup" class="hidden">
+      <div id="lineupGrid" class="lineup-grid"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">Détails de la course</h3>
+        <button class="close-btn" aria-label="Fermer">×</button>
+      </div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
