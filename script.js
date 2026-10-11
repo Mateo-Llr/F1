@@ -467,33 +467,17 @@ function carImageFallback(year) {
   return `data-requested-year="${year}" onerror="tryNextCarImage(this)"`;
 }
 
-const CAR_IMAGE_YEARS = {
-  benetton: [1994],
-  jordan: [2000],
-  renault: [2003, 2004, 2005, 2006, 2008, 2009, 2017],
-  bar: [2005],
-  honda: [2008],
-  brawn: [2009],
-  toyota: [2009],
-  lotusracing: [],
-  lotusf1: [2012],
-  mercedes: [2014, 2020, 2025, 2026],
-  haas: [2017, 2025, 2026],
-  mclaren: [2017, 2025, 2026],
-  redbull: [2017, 2025, 2026],
-  williams: [2017, 2025, 2026],
-  ferrari: [2023, 2024, 2025, 2026],
-  alpine: [2025, 2026],
-  astonmartin: [2025, 2026],
-  rbd: [2025, 2026],
-  sauber: [2025],
-  audi: [2026],
-  cadillac: [2026]
-};
-
 function closestCarImageYear(teamName, requestedYear, triedYears) {
-  return (CAR_IMAGE_YEARS[teamName] || [])
-    .filter(year => !triedYears.has(year))
+  const team = teams.find(item => item.genericName === teamName);
+  const candidateYears = new Set([
+    requestedYear,
+    ...(team?.history.map(item => Number(item.year)) || [])
+  ]);
+  const latestKnownYear = Math.max(requestedYear, currentYear, ...candidateYears);
+  for (let year = 1950; year <= latestKnownYear; year++) candidateYears.add(year);
+
+  return [...candidateYears]
+    .filter(year => Number.isInteger(year) && year > 0 && !triedYears.has(year))
     .sort((a, b) => Math.abs(a - requestedYear) - Math.abs(b - requestedYear) || b - a)[0];
 }
 
@@ -537,7 +521,15 @@ function setCarBackground(element, team, requestedYear) {
   tryNextYear();
 }
 
-function getCarPath(team, year) { return `assets/cars/${year}${team.genericName}.png`; }
+const CAR_IMAGE_NAME_ALIASES = {
+  sauber_f1: 'sauber',
+  caterham: 'catheram'
+};
+
+function getCarPath(team, year) {
+  const imageName = CAR_IMAGE_NAME_ALIASES[team.genericName] || team.genericName;
+  return `assets/cars/${year}${imageName}.png`;
+}
 function getTeamLogoPath(team) { return `assets/logos/${team.genericName}_logo.png`; }
 
 const getCircuitImagePath = (simpleName) => {

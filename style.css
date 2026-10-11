@@ -1054,18 +1054,31 @@ button.primary {
 }
 .team-card:hover { transform: translateY(-6px); filter: brightness(1.1); }
 .team-car-preview {
-  position: absolute; right: -6px; bottom: 8px; width: 68%; height: 82%;
-  background-size: contain; background-repeat: no-repeat; background-position: right bottom;
-  z-index: 1; filter: drop-shadow(0 8px 12px rgba(0,0,0,.5));
-  transition: transform .45s var(--ease);
+  /* Voiture XXL : on ne voit que ~3/4 de la voiture (à partir de la gauche),
+     le reste est coupé par le bord droit de la carte. Les roues dépassent
+     légèrement sous le bas de la carte pour donner l'effet "gros plan". */
+  --car-left: 34%;     /* début de la voiture (depuis la gauche de la carte) */
+  --car-width: 88%;    /* largeur totale de la voiture : (100% - left) / 0.75 */
+  --car-drop: -9%;     /* négatif = les roues sont rognées par le bas */
+  position: absolute; left: var(--car-left); bottom: var(--car-drop);
+  width: var(--car-width); height: 100%;
+  background-size: 100% auto; background-repeat: no-repeat; background-position: left bottom;
+  transform-origin: left bottom;
+  z-index: 1;
+  filter: grayscale(0) drop-shadow(0 8px 12px rgba(0,0,0,.5));
+  will-change: transform, filter;
+  /* Une seule déclaration de transition pour tout (évite qu'une règle plus
+     spécifique n'écrase celle du transform et ne fasse "popper" la voiture). */
+  transition: transform .75s var(--ease), filter .75s ease, opacity .75s ease;
 }
-.team-card:hover .team-car-preview { transform: translateX(-12px) scale(1.05); }
+.team-card:hover .team-car-preview { transform: translateX(-10px) scale(1.06); }
 .team-card-info { position: absolute; z-index: 3; left: 0; top: 0; bottom: 0; width: 55%; padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; }
 .tc-logo { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,.5)); }
 .team-card-info h4 { font-size: 20px; line-height: 1.05; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
 .team-card-info .muted { color: rgba(255,255,255,.8); }
-.inactive-team .team-car-preview { filter: grayscale(1) drop-shadow(0 8px 12px rgba(0,0,0,.5)); opacity: .6; transition: filter .5s, opacity .5s; }
-.inactive-team:hover .team-car-preview { filter: none; opacity: 1; }
+.inactive-team .team-car-preview { filter: grayscale(1) drop-shadow(0 8px 12px rgba(0,0,0,.5)); opacity: .6; }
+.inactive-team:hover .team-car-preview { filter: grayscale(0) drop-shadow(0 8px 12px rgba(0,0,0,.5)); opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .team-car-preview { transition-duration: .01s; } }
 
 /* Écuries actuelles : bandes verticales formant UNE seule grande F1 panoramique */
 .teams-strip, .teams-past-head { grid-column: 1 / -1; }
