@@ -38,9 +38,42 @@
 
   <main>
     <!-- ============ CHARGEMENT ============ -->
-    <section id="data-loader-view">
-      <h2>Chargement des données de la saison</h2>
-      <p id="loadingStatus" class="muted">Chargement automatique des données…</p>
+    <section id="data-loader-view" aria-label="Chargement du contenu de la saison" aria-busy="true">
+      <p id="loadingStatus" class="loading-status visually-hidden" role="status" aria-live="polite">Chargement de la saison…</p>
+      <div class="loading-skeletons" aria-hidden="true">
+        <div class="skeleton-banner">
+          <span class="skeleton-block skeleton-banner__title"></span>
+        </div>
+        <div class="skeleton-feature">
+          <div class="skeleton-feature__copy">
+            <span class="skeleton-block skeleton-line skeleton-line--short"></span>
+            <span class="skeleton-block skeleton-line skeleton-line--wide"></span>
+            <span class="skeleton-block skeleton-line skeleton-line--medium"></span>
+          </div>
+          <span class="skeleton-block skeleton-feature__image"></span>
+        </div>
+        <div class="skeleton-section-heading">
+          <span class="skeleton-block skeleton-line skeleton-line--heading"></span>
+          <span class="skeleton-block skeleton-section-heading__rule"></span>
+        </div>
+        <div class="skeleton-races">
+          <span class="skeleton-block skeleton-race"></span>
+          <span class="skeleton-block skeleton-race"></span>
+          <span class="skeleton-block skeleton-race"></span>
+          <span class="skeleton-block skeleton-race"></span>
+        </div>
+        <div class="skeleton-section-heading">
+          <span class="skeleton-block skeleton-line skeleton-line--heading"></span>
+          <span class="skeleton-block skeleton-section-heading__rule"></span>
+        </div>
+        <div class="skeleton-standings">
+          <div class="skeleton-standing"><span class="skeleton-block skeleton-standing__avatar"></span><span class="skeleton-standing__copy"><span class="skeleton-block skeleton-line skeleton-line--wide"></span><span class="skeleton-block skeleton-line skeleton-line--short"></span></span></div>
+          <div class="skeleton-standing"><span class="skeleton-block skeleton-standing__avatar"></span><span class="skeleton-standing__copy"><span class="skeleton-block skeleton-line skeleton-line--wide"></span><span class="skeleton-block skeleton-line skeleton-line--short"></span></span></div>
+          <div class="skeleton-standing"><span class="skeleton-block skeleton-standing__avatar"></span><span class="skeleton-standing__copy"><span class="skeleton-block skeleton-line skeleton-line--wide"></span><span class="skeleton-block skeleton-line skeleton-line--short"></span></span></div>
+          <div class="skeleton-standing"><span class="skeleton-block skeleton-standing__avatar"></span><span class="skeleton-standing__copy"><span class="skeleton-block skeleton-line skeleton-line--wide"></span><span class="skeleton-block skeleton-line skeleton-line--short"></span></span></div>
+          <div class="skeleton-standing"><span class="skeleton-block skeleton-standing__avatar"></span><span class="skeleton-standing__copy"><span class="skeleton-block skeleton-line skeleton-line--wide"></span><span class="skeleton-block skeleton-line skeleton-line--short"></span></span></div>
+        </div>
+      </div>
       <button id="retryDataLoadBtn" class="primary hidden" style="margin-top:20px">Réessayer</button>
     </section>
 

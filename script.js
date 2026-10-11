@@ -92,9 +92,12 @@ const nationalityCode = nat => lookupCode(NATIONALITY_CODES, nat);
 async function loadData() {
   const statusElement = $('loadingStatus');
   const retryButton = $('retryDataLoadBtn');
+  const loaderView = $('data-loader-view');
 
   retryButton.classList.add('hidden');
-  statusElement.textContent = 'Chargement automatique des données…';
+  statusElement.classList.add('visually-hidden');
+  statusElement.textContent = 'Chargement de la saison…';
+  loaderView.setAttribute('aria-busy', 'true');
 
   try {
     const response = await fetch('datas.xlsx');
@@ -106,10 +109,13 @@ async function loadData() {
     const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
     processData(workbook);
 
-    $('data-loader-view').classList.add('hidden');
+    loaderView.setAttribute('aria-busy', 'false');
+    loaderView.classList.add('hidden');
     initApp();
   } catch (error) {
     statusElement.textContent = `Erreur lors du chargement des données. Vérifiez que datas.xlsx est publié avec le site et contient les onglets requis : ${error.message}`;
+    statusElement.classList.remove('visually-hidden');
+    loaderView.setAttribute('aria-busy', 'false');
     retryButton.classList.remove('hidden');
     console.error(error);
   }
