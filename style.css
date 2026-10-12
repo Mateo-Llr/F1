@@ -318,18 +318,6 @@ nav { display: flex; gap: 6px; }
 .nav-btn:hover { background: rgba(255,255,255,.16); }
 .nav-btn.active { background: var(--f1-red); }
 
-.play-btn {
-  background: var(--card);
-  border: 1px solid rgba(255,255,255,.08);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background .3s;
-  font-weight: 500;
-}
-.play-btn:hover { background: #1c2024; }
-
 .btn-skew { background: #fff; color: #0b0b0c; padding: 13px 26px; font-size: 13px; }
 .btn-skew:hover { background: var(--f1-red); color: #fff; transform: translateY(-2px); }
 .btn-skew.ghost { background: rgba(255,255,255,.1); color: #fff; }
@@ -399,17 +387,17 @@ button.primary {
 .season-select-wrap {
   position: relative;
   min-width: 142px;
-  background:
-    repeating-linear-gradient(132deg, transparent 0 15px, rgba(255,255,255,.045) 15px 25px),
-    linear-gradient(110deg, #1b1c21, #101115);
-  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  z-index: 1;
 }
+.season-select-wrap.is-open { z-index: 60; }
 .season-select-wrap::before {
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
   background: var(--f1-red);
   content: '';
+  pointer-events: none;
+  z-index: 2;
 }
 .season-select-wrap::after {
   position: absolute;
@@ -422,12 +410,15 @@ button.primary {
   content: '';
   pointer-events: none;
   transform: translateY(-70%) rotate(45deg);
+  z-index: 2;
 }
 .season-select {
+  display: flex;
+  align-items: center;
   width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
+  background:
+    repeating-linear-gradient(132deg, transparent 0 15px, rgba(255,255,255,.045) 15px 25px),
+    linear-gradient(110deg, #1b1c21, #101115);
   border: 0;
   color: #fff;
   padding: 12px 38px 12px 18px;
@@ -435,13 +426,50 @@ button.primary {
   font-size: 12px;
   font-style: italic;
   text-transform: uppercase;
+  text-align: left;
   cursor: pointer;
   outline: 1px solid transparent;
   outline-offset: -3px;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
 }
 .season-select:focus-visible { outline-color: var(--lime); }
-.season-select option { background: #15171b; color: #fff; font-family: var(--body); }
-.season-select option:checked { background: var(--f1-red); color: #fff; }
+.season-select-wrap.is-open::after { transform: translateY(-25%) rotate(225deg); }
+.season-select-source { display: none; }
+.season-options {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  width: 100%;
+  max-height: min(320px, calc(100vh - 100px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  border: 1px solid rgba(225,6,0,.75);
+  background: #101014;
+  box-shadow: 0 12px 28px rgba(0,0,0,.55);
+  scrollbar-width: thin;
+  scrollbar-color: var(--f1-red) #19191d;
+  z-index: 3;
+}
+.season-options::-webkit-scrollbar { width: 8px; }
+.season-options::-webkit-scrollbar-track { background: #19191d; }
+.season-options::-webkit-scrollbar-thumb { background: var(--f1-red); border-radius: 8px; }
+.season-option {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  background: transparent;
+  color: #e9e9ea;
+  font: 11px var(--display);
+  letter-spacing: .06em;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.season-option:hover,
+.season-option:focus-visible { background: rgba(225,6,0,.28); color: #fff; outline: none; }
+.season-option[aria-selected="true"] { background: var(--f1-red); color: #fff; }
 .search {
   background: rgba(255,255,255,.07);
   border: 1px solid rgba(255,255,255,.1);
@@ -571,20 +599,20 @@ button.primary {
   width: 66px; flex: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: linear-gradient(180deg, var(--c1), var(--c2));
-  font-family: var(--display);
+  font-family: 'F1-Bold-4', var(--display);
   clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
   text-shadow: 0 2px 6px rgba(0,0,0,.4);
 }
 .rt-round small { font-size: 10px; letter-spacing: .22em; opacity: .85; }
-.rt-round b { font-size: 30px; font-style: italic; line-height: 1.1; }
+.rt-round b { font-size: 30px; font-style: normal; line-height: 1.1; }
 .rt-body { flex: 1; min-width: 0; padding: 14px 16px 14px 6px; margin-left: -4px; position: relative; z-index: 1; }
 .rt-head { padding-right: 96px; }
-.rt-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: rgba(255,255,255,.65); }
+.rt-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: var(--display); font-size: 11px; font-style: normal; text-transform: uppercase; letter-spacing: .12em; color: rgba(255,255,255,.65); }
 .rt-flag { width: 30px; height: 20px; border-radius: 2px; object-fit: cover; }
 .rt-badge { padding: 2px 10px; background: rgba(255,255,255,.12); font-weight: 700; letter-spacing: .1em; }
 .rt-badge.is-next { background: var(--lime); color: #111; animation: pulse 2s infinite; }
-.rt-name { font-size: 18px; line-height: 1.12; margin: 6px 0 2px; }
-.rt-loc { margin: 0; font-size: 12px; color: rgba(255,255,255,.55); }
+.rt-name { font-family: 'F1-Black', var(--display); font-weight: 900; font-style: normal; font-size: 18px; line-height: 1.12; margin: 6px 0 2px; }
+.rt-loc { margin: 0; font-family: var(--display); font-size: 12px; font-style: normal; color: rgba(255,255,255,.55); }
 .rt-circuit { position: absolute; right: 14px; top: 12px; width: 84px; height: 64px; object-fit: contain; opacity: .92; }
 .rt-podium { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .race-tile.is-calendar {
@@ -669,12 +697,12 @@ button.primary {
 }
 .pod i {
   width: 22px; display: grid; place-items: center;
-  font-style: normal; font-family: var(--display); font-size: 12px;
+  font-style: normal; font-family: 'F1-Bold-4', var(--display); font-size: 12px;
   color: #111; background: var(--gold);
 }
 .pod-2 i { background: var(--silver); }
 .pod-3 i { background: var(--bronze); }
-.pod b { align-self: center; padding: 0 14px 0 8px; font-family: var(--display); font-weight: 400; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+.pod b { align-self: center; padding: 0 14px 0 8px; font-family: 'F1-Black', var(--display); font-weight: 900; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
 .race-tile.is-future { opacity: .88; }
 
 /* ===============================
@@ -1360,13 +1388,14 @@ button.primary {
   gap: 12px;
   margin: 6px 0 22px;
   font-family: var(--display);
+  font-style: normal;
   font-size: clamp(17px, 3vw, 28px);
   text-transform: uppercase;
   line-height: 1.15;
 }
-.race-results__heading > span { color: var(--lime); }
+.race-results__heading > span { color: var(--lime); font-family: 'F1-Bold-4', var(--display); }
 .race-results__heading > i { font-style: normal; color: #fff; }
-.race-results__heading > b { font-weight: 400; }
+.race-results__heading > b { font-family: 'F1-Black', var(--display); font-weight: 900; }
 .race-podium {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1402,9 +1431,9 @@ button.primary {
   left: 14px;
   z-index: 0;
   color: rgba(255,255,255,.92);
-  font-family: var(--display);
+  font-family: 'F1-Bold-4', var(--display);
   font-size: clamp(68px, 9vw, 108px);
-  font-style: italic;
+  font-style: normal;
   line-height: 1;
 }
 .race-podium-card__driver {
@@ -1429,7 +1458,8 @@ button.primary {
 }
 .race-podium-card__name {
   overflow: hidden;
-  font-family: var(--display);
+  font-family: 'F1-Black', var(--display);
+  font-weight: 900;
   padding: 0 24px;
   font-size: clamp(15px, 1.8vw, 20px);
   line-height: 1.15;
@@ -1458,7 +1488,8 @@ button.primary {
   padding: 4px 6px;
   background: rgba(8,9,12,.9);
   color: var(--lime);
-  font-family: var(--display);
+  font-family: 'F1-Black', var(--display);
+  font-weight: 900;
   font-size: 19px;
   line-height: 1;
 }
@@ -1481,7 +1512,8 @@ button.primary {
   place-items: center;
   background: var(--f1-red);
   clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 100%, 0 100%);
-  font-family: var(--display);
+  font-family: 'F1-Bold-4', var(--display);
+  font-style: normal;
   font-size: 19px;
 }
 .race-result-row__driver {
@@ -1491,7 +1523,8 @@ button.primary {
   gap: 2px;
   overflow: hidden;
   padding: 0 12px;
-  font-family: var(--display);
+  font-family: 'F1-Black', var(--display);
+  font-weight: 900;
   font-size: clamp(11px, 1.6vw, 15px);
   text-transform: uppercase;
 }
@@ -1514,7 +1547,8 @@ button.primary {
   gap: 10px;
   min-width: 0;
   padding: 0 10px;
-  font-family: var(--display);
+  font-family: 'F1-Black', var(--display);
+  font-weight: 900;
   font-size: clamp(12px, 1.7vw, 16px);
   text-transform: uppercase;
 }
@@ -1528,7 +1562,9 @@ button.primary {
   justify-content: center;
   background: rgba(5,6,9,.5);
   color: var(--lime);
-  font-family: var(--display);
+  font-family: 'F1-Black', var(--display);
+  font-style: normal;
+  font-weight: 900;
   line-height: 1;
 }
 .race-result-row__points b { font-size: 17px; }
@@ -1636,16 +1672,36 @@ button.primary {
 }
 .home-podium-card__points small { margin-top: 2px; font: 700 8px var(--body); }
 .race-results__upcoming {
+  display: grid;
+  grid-template-columns: minmax(180px, .85fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+  min-height: 260px;
+  padding: 24px 10px;
+}
+.race-results__upcoming-circuit {
   display: flex;
+  min-height: 190px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  min-height: 220px;
-  padding: 20px;
+  gap: 14px;
+  padding: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
   text-align: center;
 }
-.race-results__upcoming img { width: 160px; max-height: 140px; object-fit: contain; }
-.race-results__upcoming p { max-width: 360px; color: rgba(255,255,255,.7); }
+.race-results__upcoming-circuit img { width: min(100%, 250px); height: 120px; object-fit: contain; filter: grayscale(1) brightness(1.7); }
+.race-results__upcoming-circuit span { font-family: 'F1-Black', var(--display); font-size: 13px; text-transform: uppercase; }
+.race-results__upcoming-info { min-width: 0; }
+.race-results__upcoming-status { color: var(--lime); font-family: 'F1-Bold-4', var(--display); font-size: 11px; text-transform: uppercase; }
+.race-results__upcoming-info h4 { margin: 8px 0 4px; font-family: 'F1-Black', var(--display); font-size: clamp(17px, 2.6vw, 24px); line-height: 1.2; text-transform: uppercase; }
+.race-results__upcoming-info h4 span { display: block; margin-top: 3px; color: var(--lime); font-size: .78em; }
+.race-results__upcoming-info > p { margin: 0; color: rgba(255,255,255,.65); font-family: var(--display); font-size: 12px; }
+.race-results__upcoming-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 14px; }
+.race-results__upcoming-stats span { display: flex; min-width: 86px; flex-direction: column; gap: 4px; padding: 10px 12px; background: rgba(255,255,255,.07); }
+.race-results__upcoming-stats b { font-family: 'F1-Black', var(--display); font-size: 15px; text-transform: uppercase; }
+.race-results__upcoming-stats small { color: rgba(255,255,255,.55); font-size: 10px; text-transform: uppercase; }
+.race-results__upcoming-info .race-results__upcoming-note { margin-top: 14px; font-family: var(--body); font-size: 12px; line-height: 1.5; }
 
 /* ===============================
   RESPONSIVE
@@ -1669,7 +1725,6 @@ button.primary {
   .season-select-wrap { min-width: 112px; }
   .season-select { padding: 10px 29px 10px 12px; font-size: 10px; }
   .season-select-wrap::after { right: 12px; width: 7px; height: 7px; }
-  .play-btn { padding: 9px 10px; font-size: 11px; }
   #view-lineup { padding: 14px 10px; }
   .lineup-page-head h2 { font-size: clamp(20px, 6vw, 24px); }
   .lineup-grid {
@@ -1733,7 +1788,7 @@ button.primary {
   .modal--race-results .modal-card { max-height: 94vh; }
   .race-results { padding: 14px 14px 20px; }
   .race-results__banner { margin-right: -14px; margin-left: -14px; }
-  .race-results__heading { gap: 8px; margin-bottom: 16px; }
+  .race-results__heading { flex-wrap: wrap; gap: 8px; margin-bottom: 16px; font-size: clamp(13px, 4vw, 18px); }
   .race-podium { gap: 8px; }
   .race-podium-card { height: 238px; }
   .race-podium-card.is-p1 { height: 270px; }
@@ -1748,7 +1803,9 @@ button.primary {
   .race-result-row__team { gap: 5px; padding: 0 5px; font-size: 11px; }
   .race-result-row__team img { width: 30px; height: 28px; }
   .race-result-row__points b { font-size: 15px; }
-  .race-results__upcoming { flex-direction: column; gap: 8px; }
+  .race-results__upcoming { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 14px 4px; }
+  .race-results__upcoming-circuit { min-height: 150px; }
+  .race-results__upcoming-circuit img { height: 90px; }
 
   .teams-grid { grid-template-columns: 1fr; }
   .search { min-width: 0; width: 100%; }

@@ -29,11 +29,11 @@
     <div class="header-controls">
       <div class="header-season-picker">
         <div class="season-select-wrap">
-          <select id="seasonSelect" class="season-select" aria-label="Choisir une saison"></select>
+          <select id="seasonSelect" class="season-select-source" aria-hidden="true" tabindex="-1"></select>
+          <button id="seasonSelectButton" class="season-select" type="button" aria-label="Choisir une saison" aria-haspopup="listbox" aria-expanded="false" aria-controls="seasonOptions">Saison 2026</button>
+          <div id="seasonOptions" class="season-options hidden" role="listbox" aria-label="Saisons"></div>
         </div>
       </div>
-      <button id="musicToggle" class="play-btn">▶ Play music</button>
-      <audio id="bgMusic" loop src="assets/radio.mp3"></audio>
     </div>
   </header>
 

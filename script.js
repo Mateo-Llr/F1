@@ -137,6 +137,42 @@ function refreshSeasonSelector() {
 
   seasonSelect.innerHTML = availableYears.map(y => `<option value="${y}">Saison ${y}</option>`).join('');
   seasonSelect.value = String(currentYear);
+  const seasonOptions = $('seasonOptions');
+  if (seasonOptions) {
+    seasonOptions.innerHTML = availableYears
+      .map(y => `<button type="button" class="season-option" role="option" data-season-year="${y}">Saison ${y}</button>`)
+      .join('');
+  }
+  updateSeasonSelectButton();
+}
+
+function updateSeasonSelectButton() {
+  const button = $('seasonSelectButton');
+  const options = $('seasonOptions');
+  if (!button || !options) return;
+
+  button.textContent = `Saison ${currentYear}`;
+  options.querySelectorAll('.season-option').forEach(option => {
+    const selected = Number(option.dataset.seasonYear) === currentYear;
+    option.setAttribute('aria-selected', String(selected));
+    option.tabIndex = selected ? 0 : -1;
+  });
+}
+
+function setSeasonMenuOpen(open, focusSelected = false) {
+  const wrapper = document.querySelector('.season-select-wrap');
+  const button = $('seasonSelectButton');
+  const options = $('seasonOptions');
+  if (!wrapper || !button || !options) return;
+
+  wrapper.classList.toggle('is-open', open);
+  options.classList.toggle('hidden', !open);
+  button.setAttribute('aria-expanded', String(open));
+  if (open && focusSelected) {
+    const selected = options.querySelector('[aria-selected="true"]');
+    selected?.focus();
+    selected?.scrollIntoView({ block: 'nearest' });
+  }
 }
 
 function processData(workbook) {
@@ -236,8 +272,13 @@ function processData(workbook) {
       id: r.ID,
       name: r.Name,
       location: r.Location,
+      country: r.Pays || '',
+      circuit: r.Circuit || r.Location || '',
       date: dateStr,
       flag: flagCode,
+      laps: Number(r.Tours) || null,
+      distance: Number(r.Distance_km) || null,
+      sprint: /^(oui|yes|true|1)$/i.test(String(r.Sprint || '').trim()),
       classification: classification
     };
   }).sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -1425,6 +1466,9 @@ function openRaceModal(raceId) {
   const escapedRaceLabel = String(raceLabel).replace(/[&<>"']/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   })[character]);
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
   const podium = race.classification.slice(0, 3);
   const podiumOrder = [podium[1], podium[0], podium[2]].filter(Boolean);
 
@@ -1444,8 +1488,21 @@ function openRaceModal(raceId) {
 
   if (race.classification.length === 0) {
     html += `<div class="race-results__upcoming">
-      <img src="${getCircuitImagePath(race.location)}" alt="" ${hideOnError}>
-      <p>Course à venir. Le classement sera disponible après l’événement.</p>
+      <div class="race-results__upcoming-circuit">
+        <img src="${getCircuitImagePath(race.location)}" alt="" ${hideOnError}>
+        <span>${escapeHtml(race.circuit || race.location)}</span>
+      </div>
+      <div class="race-results__upcoming-info">
+        <span class="race-results__upcoming-status">Week-end à venir</span>
+        <h4>${escapeHtml(fmtDate(race.date, { weekday: 'long', day: 'numeric', month: 'long' }))}<span>${year}</span></h4>
+        <p>${escapeHtml(race.location)}${race.country ? ` · ${escapeHtml(race.country)}` : ''}</p>
+        <div class="race-results__upcoming-stats">
+          ${race.laps ? `<span><b>${race.laps}</b><small>tours</small></span>` : ''}
+          ${race.distance ? `<span><b>${escapeHtml(Number(race.distance).toLocaleString('fr-FR'))}</b><small>km</small></span>` : ''}
+          <span><b>${race.sprint ? 'Sprint' : 'Classique'}</b><small>format</small></span>
+        </div>
+        <p class="race-results__upcoming-note">Le classement et les résultats détaillés seront disponibles après la course.</p>
+      </div>
     </div>`;
   } else {
     html += `<section class="race-podium" aria-label="Podium">${podiumOrder.map(p => {
@@ -1654,6 +1711,7 @@ function applyRoute(r, { pop = false, scrollY = 0 } = {}) {
     shown = {};
   }
   if ($('seasonSelect')) $('seasonSelect').value = String(currentYear);
+  updateSeasonSelectButton();
 
   const pageChanged = shown.view !== r.view ||
     shown.team !== (r.team || null) ||
@@ -1715,6 +1773,19 @@ function setActiveChip(container, attr, value) {
 }
 
 document.addEventListener('click', e => {
+  const seasonWrapper = document.querySelector('.season-select-wrap');
+  if (seasonWrapper && !seasonWrapper.contains(e.target)) setSeasonMenuOpen(false);
+
+  const seasonOption = e.target.closest('[data-season-year]');
+  if (seasonOption) {
+    const seasonSelect = $('seasonSelect');
+    seasonSelect.value = seasonOption.dataset.seasonYear;
+    seasonSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    setSeasonMenuOpen(false);
+    $('seasonSelectButton').focus();
+    return;
+  }
+
   const raceEl = e.target.closest('[data-race]');
   if (raceEl) { navigate({ ...route, race: Number(raceEl.dataset.race), at: null }); return; }
 
@@ -1757,10 +1828,39 @@ document.addEventListener('click', e => {
   if (e.target === modal) requestCloseModal();
 });
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') requestCloseModal(); });
+document.addEventListener('keydown', e => {
+  const seasonButton = $('seasonSelectButton');
+  const seasonOptions = $('seasonOptions');
+  if (e.key === 'Escape' && seasonButton?.getAttribute('aria-expanded') === 'true') {
+    e.preventDefault();
+    setSeasonMenuOpen(false);
+    seasonButton.focus();
+    return;
+  }
+  if (e.target === seasonButton && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
+    e.preventDefault();
+    setSeasonMenuOpen(true, true);
+    return;
+  }
+  if (e.target.matches?.('.season-option') && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+    e.preventDefault();
+    const options = Array.from(seasonOptions.querySelectorAll('.season-option'));
+    const currentIndex = options.indexOf(e.target);
+    const nextIndex = e.key === 'Home' ? 0 : e.key === 'End' ? options.length - 1 :
+      (currentIndex + (e.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+    options[nextIndex]?.focus();
+    return;
+  }
+  if (e.key === 'Escape') requestCloseModal();
+});
 $('driverSearch').addEventListener('input', e => { driverQuery = e.target.value; renderDrivers(); });
+$('seasonSelectButton')?.addEventListener('click', () => {
+  setSeasonMenuOpen($('seasonSelectButton').getAttribute('aria-expanded') !== 'true', true);
+});
 $('seasonSelect')?.addEventListener('change', e => {
   const year = Number(e.target.value || currentYear);
+  currentYear = year;
+  updateSeasonSelectButton();
   if (!dataLoaded) { currentYear = year; return; }
   // Changer de saison ne crée pas d'entrée d'historique : on remplace l'entrée courante
   navigate({ view: route.view, team: route.team, year, section: route.section }, { replace: true });
@@ -1768,28 +1868,6 @@ $('seasonSelect')?.addEventListener('change', e => {
 window.matchMedia('(max-width: 620px)').addEventListener('change', () => {
   if (dataLoaded) renderLineup();
 });
-
-/* ===============================
-  MUSIQUE
-  =============================== */
-const bgMusic = $('bgMusic');
-const musicToggle = $('musicToggle');
-let playing = false;
-musicToggle.onclick = async () => {
-  try {
-    if (!playing) {
-      await bgMusic.play();
-      playing = true;
-      musicToggle.textContent = '⏸ Pause music';
-    } else {
-      bgMusic.pause();
-      playing = false;
-      musicToggle.textContent = '▶ Play music';
-    }
-  } catch (err) {
-    console.warn('Autoplay bloqué');
-  }
-};
 
 /* ===============================
   INITIALISATION
