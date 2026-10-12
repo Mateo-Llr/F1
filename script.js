@@ -375,12 +375,84 @@ function calculateTeamRanking() {
 /* ===============================
   UTILITAIRES
   =============================== */
+const DRIVER_IMAGE_YEARS = {
+  aitken: [2022],
+  albon: [2022, 2024, 2025, 2026],
+  alonso: [2003, 2004, 2017, 2021, 2022, 2023, 2024, 2025, 2026],
+  antonelli: [2025, 2026],
+  bearman: [2025],
+  bortoleto: [2025, 2026],
+  bottas: [2017, 2022, 2023, 2024, 2026],
+  buemi: [2022],
+  carlos: [2016, 2026],
+  colapinto: [2025, 2026],
+  devries: [2022],
+  doohan: [2024, 2025],
+  drugovich: [2023],
+  ericsson: [2017],
+  fittipaldi: [2022, 2023],
+  gasly: [2022, 2023, 2024, 2025, 2026],
+  giovinazzi: [2022, 2023],
+  grosjean: [2016, 2020],
+  hadjar: [2025, 2026],
+  hamilton: [2017, 2022, 2023, 2024, 2025, 2026],
+  hartley: [2018],
+  hulkenberg: [2017, 2022, 2024, 2025, 2026],
+  kubica: [2022],
+  kvyat: [2020],
+  kyvat: [2017],
+  latifi: [2020, 2022],
+  lawson: [2023, 2025],
+  leclerc: [2022, 2023, 2024, 2025, 2026],
+  lindblad: [2026],
+  m_schumacher: [2022, 2023],
+  magnussen: [2017, 2022, 2024],
+  massa: [2017],
+  mazepin: [2021],
+  norris: [2022, 2024, 2025, 2026],
+  ocon: [2017, 2021, 2022, 2024, 2025, 2026],
+  palmer: [2017],
+  palou: [2023],
+  perez: [2017, 2022, 2023, 2024, 2026],
+  piastri: [2022, 2024, 2025, 2026],
+  raikkonen: [2016, 2021],
+  ricciardo: [2017, 2022, 2023, 2024],
+  rosberg: [2016],
+  russell: [2020, 2022, 2024, 2025, 2026],
+  sainz: [2022, 2023, 2024, 2025],
+  sargeant: [2023, 2024],
+  schumacher: [2000],
+  stroll: [2017, 2022, 2025, 2026],
+  trulli: [2003],
+  tsunoda: [2022, 2023, 2025],
+  vandoorne: [2017, 2022],
+  verstappen: [2017, 2022, 2023, 2024, 2025, 2026],
+  vettel: [2015, 2019, 2020, 2022],
+  wehrlein: [2017],
+  zhou: [2022, 2023, 2024]
+};
+
+function closestAvailableImageYear(years, requestedYear) {
+  return years.reduce((closest, year) => {
+    const distance = Math.abs(year - requestedYear);
+    const closestDistance = Math.abs(closest - requestedYear);
+    return distance < closestDistance || (distance === closestDistance && year > closest)
+      ? year
+      : closest;
+  });
+}
+
 function getDriverImg(driverName, year) {
-  return `assets/drivers/${year}_full_${getDriverImageGeneric(driverName)}.png`;
+  const imageName = getDriverImageGeneric(driverName);
+  const availableImageYears = DRIVER_IMAGE_YEARS[imageName];
+  if (!availableImageYears) return 'assets/drivers/unkown.png';
+
+  const imageYear = closestAvailableImageYear(availableImageYears, Number(year));
+  return `assets/drivers/${imageYear}_full_${imageName}.png`;
 }
 
 function getDriverHeadImg(driverName, year) {
-  return `assets/drivers/${year}_full_${getDriverImageGeneric(driverName)}.png`;
+  return getDriverImg(driverName, year);
 }
 
 function getDriverImageGeneric(driverName) {
@@ -430,95 +502,9 @@ function getMainDrivers(drivers, year) {
   return keep.map(d => d.name);
 }
 
-function driverImageFallback(year) {
-  return `data-requested-year="${year}" onerror="tryNextDriverImage(this)"`;
-}
-
-function closestUntriedYear(requestedYear, triedYears) {
-  return [...new Set([...availableYears, requestedYear])]
-    .filter(year => Number.isInteger(year) && year > 0 && !triedYears.has(year))
-    .sort((a, b) => Math.abs(a - requestedYear) - Math.abs(b - requestedYear) || b - a)[0];
-}
-
-function tryNextDriverImage(image) {
-  const match = image.src.match(/\/(\d+)_full_([^/]+)\.png(?:[?#]|$)/i);
-  if (!match) {
-    image.style.visibility = 'hidden';
-    return;
-  }
-
-  const requestedYear = Number(image.dataset.requestedYear || match[1]);
-  const triedYears = new Set((image.dataset.triedYears || '').split(',').filter(Boolean).map(Number));
-  triedYears.add(Number(match[1]));
-
-  const nextYear = closestUntriedYear(requestedYear, triedYears);
-
-  if (!nextYear) {
-    image.style.visibility = 'hidden';
-    return;
-  }
-
-  triedYears.add(nextYear);
-  image.dataset.triedYears = [...triedYears].join(',');
-  image.src = `assets/drivers/${nextYear}_full_${match[2]}.png`;
-}
-
-function carImageFallback(year) {
-  return `data-requested-year="${year}" onerror="tryNextCarImage(this)"`;
-}
-
-function closestCarImageYear(teamName, requestedYear, triedYears) {
-  const team = teams.find(item => item.genericName === teamName);
-  const candidateYears = new Set([
-    requestedYear,
-    ...(team?.history.map(item => Number(item.year)) || [])
-  ]);
-  const latestKnownYear = Math.max(requestedYear, currentYear, ...candidateYears);
-  for (let year = 1950; year <= latestKnownYear; year++) candidateYears.add(year);
-
-  return [...candidateYears]
-    .filter(year => Number.isInteger(year) && year > 0 && !triedYears.has(year))
-    .sort((a, b) => Math.abs(a - requestedYear) - Math.abs(b - requestedYear) || b - a)[0];
-}
-
-function tryNextCarImage(image) {
-  const match = image.src.match(/\/(\d+)([^/]+)\.png(?:[?#]|$)/i);
-  if (!match) {
-    image.style.visibility = 'hidden';
-    return;
-  }
-
-  const requestedYear = Number(image.dataset.requestedYear || match[1]);
-  const triedYears = new Set((image.dataset.triedYears || '').split(',').filter(Boolean).map(Number));
-  triedYears.add(Number(match[1]));
-  const nextYear = closestCarImageYear(match[2], requestedYear, triedYears);
-
-  if (!nextYear) {
-    image.style.visibility = 'hidden';
-    return;
-  }
-
-  triedYears.add(nextYear);
-  image.dataset.triedYears = [...triedYears].join(',');
-  image.src = `assets/cars/${nextYear}${match[2]}.png`;
-}
-
 function setCarBackground(element, team, requestedYear) {
-  const triedYears = new Set();
-  const tryNextYear = () => {
-    const nextYear = closestCarImageYear(team.genericName, requestedYear, triedYears);
-    if (!nextYear) return;
-
-    triedYears.add(nextYear);
-    const image = new Image();
-    image.onload = () => {
-      element.style.backgroundImage = `url("${getCarPath(team, nextYear)}")`;
-    };
-    image.onerror = tryNextYear;
-    image.src = getCarPath(team, nextYear);
-  };
-
-  tryNextYear();
+  const carPath = getCarPath(team, requestedYear);
+  if (carPath) element.style.backgroundImage = `url("${carPath}")`;
 }
 
 const CAR_IMAGE_NAME_ALIASES = {
@@ -526,9 +512,52 @@ const CAR_IMAGE_NAME_ALIASES = {
   caterham: 'catheram'
 };
 
+const CAR_IMAGE_YEARS = {
+  alpine: [2025, 2026],
+  arrows: [2002],
+  astonmartin: [2025, 2026],
+  audi: [2026],
+  bar: [2005],
+  benetton: [1994],
+  bmwsauber: [2008],
+  brawn: [2009],
+  cadillac: [2026],
+  catheram: [2012, 2014],
+  ferrari: [2023, 2024, 2025, 2026],
+  forceindia: [2018],
+  haas: [2017, 2025, 2026],
+  honda: [2008],
+  hrt: [2006],
+  jaguar: [2004],
+  jordan: [2000],
+  lotusf1: [2012],
+  lotusracing: [2010],
+  manor: [2016],
+  marussia: [2013],
+  mclaren: [2017, 2025, 2026],
+  mercedes: [2014, 2020, 2025, 2026],
+  midland: [2006],
+  minardi: [2000],
+  prost: [1999],
+  rbd: [2025, 2026],
+  redbull: [2017, 2025, 2026],
+  renault: [2003, 2004, 2005, 2006, 2008, 2009, 2017],
+  sauber: [2018, 2025],
+  spyker: [2007],
+  superaguri: [2008],
+  tororosso: [2015],
+  toyota: [2009],
+  virgin: [2011],
+  williams: [2017, 2025, 2026]
+};
+
 function getCarPath(team, year) {
   const imageName = CAR_IMAGE_NAME_ALIASES[team.genericName] || team.genericName;
-  return `assets/cars/${year}${imageName}.png`;
+  const availableImageYears = CAR_IMAGE_YEARS[imageName];
+  if (!availableImageYears) return null;
+
+  const imageYear = closestAvailableImageYear(availableImageYears, Number(year));
+  return `assets/cars/${imageYear}${imageName}.png`;
 }
 function getTeamLogoPath(team) { return `assets/logos/${team.genericName}_logo.png`; }
 
@@ -577,11 +606,9 @@ function driverRankRow(d, i, maxPts) {
       <div class="rk-pos"><span>${i + 1}</span></div>
       <div class="rk-band">
         <img class="rk-logo" src="${team ? getTeamLogoPath(team) : FALLBACK_LOGO}" alt="${team ? team.name : ''}" loading="lazy" ${hideOnError}>
-        <img class="rk-head" src="${getDriverHeadImg(d.name, currentYear)}" alt="${d.name}" loading="lazy" ${driverImageFallback(currentYear)}>
+        <img class="rk-head" src="${getDriverHeadImg(d.name, currentYear)}" alt="${d.name}" loading="lazy" ${hideOnError}>
         <div class="rk-name">
-          <span class="rk-first">${firstName(d.name)}</span>
           <span class="rk-last">${lastName(d.name)}</span>
-          <span class="rk-team">${team ? team.name : ''}</span>
         </div>
         <div class="rk-meta">
           <b>${gap}</b>
@@ -600,7 +627,7 @@ function homePodiumCard(d, i) {
   return `
     <article class="home-podium-card is-p${i + 1}" style="--i:${i};--c1:${c1};--c2:${c2}" aria-label="${i + 1}. ${d.name}, ${d.points} points">
       <span class="home-podium-card__position">${i + 1}</span>
-      <img class="home-podium-card__driver" src="${getDriverImg(d.name, currentYear)}" alt="${d.name}" loading="lazy" ${driverImageFallback(currentYear)}>
+      <img class="home-podium-card__driver" src="${getDriverImg(d.name, currentYear)}" alt="${d.name}" loading="lazy" ${hideOnError}>
       <div class="home-podium-card__points">${d.points}<small>PTS</small></div>
       <div class="home-podium-card__info">
         <div class="home-podium-card__name">${lastName(d.name)}</div>
@@ -613,6 +640,7 @@ function teamRankRow(t, i, maxPts) {
   const [c1, c2] = teamColors(t.team);
   const pct = maxPts ? Math.max(3, Math.round(t.points / maxPts * 100)) : 0;
   const cls = i < 3 ? ` is-p${i + 1}` : '';
+  const carPath = getCarPath(t.team, currentYear);
 
   return `
     <div class="rank-row is-team${cls}" style="--i:${i};--c1:${c1};--c2:${c2};--pct:${pct}%">
@@ -623,7 +651,7 @@ function teamRankRow(t, i, maxPts) {
           <span class="rk-first">${t.drivers.map(lastName).join(' · ')}</span>
           <span class="rk-last">${t.name}</span>
         </div>
-        <img class="rk-car" src="${getCarPath(t.team, currentYear)}" alt="" loading="lazy" ${carImageFallback(currentYear)}>
+        <img class="rk-car" ${carPath ? `src="${carPath}"` : 'hidden'} alt="" loading="lazy" ${hideOnError}>
         <i class="rk-bar"></i>
       </div>
       <div class="rk-pts"><b>${t.points}</b><small>PTS</small></div>
@@ -692,7 +720,7 @@ function renderCourses() {
 
   $('nextRacesList').innerHTML =
     shown.map((r, i) => raceTile(r, list.indexOf(r) + 1, next ? next.id : null, i)).join('') +
-    `<button class="more-tile" data-view="season">
+    `<button class="more-tile" data-view="season" data-season-section="calendar">
        <b>Voir plus de GP</b>
        <span class="muted" style="color:rgba(255,255,255,.85)">Calendrier complet</span>
      </button>`;
@@ -747,10 +775,10 @@ function renderHero() {
           <div><b>${champ.wins}</b><span>Victoires</span></div>
           <div><b>${champ.podiums}</b><span>Podiums</span></div>
         </div>
-        <button class="btn-skew" data-view="season">Voir le classement</button>
+        <button class="btn-skew" data-view="season" data-season-section="ranking">Voir le classement</button>
       </div>
       <div class="hero-art">
-        <img class="hero-driver" src="${getDriverImg(champ.name, currentYear)}" alt="${champ.name}" ${driverImageFallback(currentYear)}>
+        <img class="hero-driver" src="${getDriverImg(champ.name, currentYear)}" alt="${champ.name}" ${hideOnError}>
       </div>
     </div>`;
 }
@@ -886,7 +914,7 @@ function renderDrivers() {
 
     return `
       <div class="driver-tile${isActive ? '' : ' is-inactive'}" style="--i:${Math.min(i, 15)};--c1:${c1};--c2:${c2}">
-        <img class="dt-img" src="${getDriverImg(d.name, year)}" alt="${d.name}" loading="lazy" ${driverImageFallback(year)}>
+        <img class="dt-img" src="${getDriverImg(d.name, year)}" alt="${d.name}" loading="lazy" ${hideOnError}>
         <span class="dt-badge">${badge}</span>
         ${num ? `<span class="dt-number">${num}</span>` : ''}
         <div class="dt-info">
@@ -911,7 +939,7 @@ function lineupTeamHtml({ team, drivers }, i, pos) {
   const driversHtml = drivers.map(driverName => `
     <figure class="lineup-driver${driverName ? '' : ' is-tbc'}">
       ${driverName
-        ? `<div class="lineup-driver__photo"><img src="${getDriverImg(driverName, currentYear)}" alt="${driverName}" loading="lazy" onload="markFullBody(this)" ${driverImageFallback(currentYear)}></div>`
+        ? `<div class="lineup-driver__photo"><img src="${getDriverImg(driverName, currentYear)}" alt="${driverName}" loading="lazy" onload="markFullBody(this)" ${hideOnError}></div>`
         : '<div class="lineup-driver__photo"><img class="lineup-driver__silhouette" src="assets/drivers/unkown.png" alt="" loading="lazy"></div>'}
       <figcaption>${driverName ? lastName(driverName) : 'TBC'}</figcaption>
     </figure>`).join('');
@@ -1333,7 +1361,7 @@ function showTeamDetail(teamName) {
 
     const drivers = h.drivers.map(name => `
       <figure class="td-driver" title="${esc(name)}">
-        <img src="${getDriverImg(name, h.year)}" alt="${esc(name)}" loading="lazy" ${driverImageFallback(h.year)}>
+        <img src="${getDriverImg(name, h.year)}" alt="${esc(name)}" loading="lazy" ${hideOnError}>
         <figcaption>${esc(lastName(name))}</figcaption>
       </figure>`).join('');
 
@@ -1427,7 +1455,7 @@ function openRaceModal(raceId) {
       const detail = p.laps ? `${p.laps} tours · ${p.time || p.gap || p.status}` : '';
       return `<article class="race-podium-card is-p${p.pos}" style="--c1:${c1};--c2:${c2}">
         <span class="race-podium-card__position">${p.pos}</span>
-        <img class="race-podium-card__driver" src="${getDriverImg(p.name, year)}" alt="${p.name}" ${driverImageFallback(year)}>
+        <img class="race-podium-card__driver" src="${getDriverImg(p.name, year)}" alt="${p.name}" ${hideOnError}>
         <div class="race-podium-card__info">
           <div class="race-podium-card__name">${lastName(p.name)}</div>
           ${detail ? `<small class="race-podium-card__detail">${detail}</small>` : ''}
@@ -1542,7 +1570,7 @@ window.addEventListener('resize', () => {
   =============================== */
 history.scrollRestoration = 'manual';
 
-let route = { view: 'courses', team: null, race: null, at: null, year: null };
+let route = { view: 'courses', team: null, race: null, at: null, year: null, section: 'calendar' };
 let shown = {};              // page actuellement affichée (évite de tout re-rendre pour une simple modale)
 let scrollSaveTimer = null;
 
@@ -1552,6 +1580,7 @@ function routeToHash(r) {
   if (r.team) p.set('ecurie', r.team);
   if (r.race) p.set('course', r.race);
   if (r.at) p.set('ancre', r.at);
+  if (r.view === 'season' && r.section === 'ranking') p.set('section', 'ranking');
   const q = p.toString();
   return `#/${r.view}${q ? '?' + q : ''}`;
 }
@@ -1565,7 +1594,8 @@ function parseHash() {
     team: m[1] === 'teams' ? (p.get('ecurie') || null) : null,
     race: Number(p.get('course')) || null,
     at: p.get('ancre') || null,
-    year: Number(p.get('saison')) || null
+    year: Number(p.get('saison')) || null,
+    section: p.get('section') === 'ranking' ? 'ranking' : 'calendar'
   };
 }
 
@@ -1599,7 +1629,8 @@ function navigate(next, { replace = false } = {}) {
     team: next.view === 'teams' ? (next.team || null) : null,
     race: next.race || null,
     at: next.at || null,
-    year: next.year || currentYear
+    year: next.year || currentYear,
+    section: next.view === 'season' ? (next.section || seasonSection) : 'calendar'
   };
   const hash = routeToHash(target);
   clearTimeout(scrollSaveTimer);
@@ -1631,6 +1662,7 @@ function applyRoute(r, { pop = false, scrollY = 0 } = {}) {
     showView(r.view, r.team);
     shown = { view: r.view, team: r.team || null, year: currentYear };
   }
+  if (r.view === 'season') setSeasonSection(r.section);
   route = r;
 
   if (r.race) openRaceModal(r.race); else closeModal();
@@ -1645,11 +1677,26 @@ window.addEventListener('popstate', e => {
   applyRoute(e.state?.route || parseHash(), { pop: true, scrollY: e.state?.scrollY || 0 });
 });
 
+let seasonSection = 'calendar';
+
+function setSeasonSection(section) {
+  seasonSection = section === 'ranking' ? 'ranking' : 'calendar';
+  $('seasonSectionTitle').textContent = seasonSection === 'ranking' ? 'Classement' : 'Calendrier';
+  $('seasonCalendar').classList.toggle('hidden', seasonSection !== 'calendar');
+  $('seasonRanking').classList.toggle('hidden', seasonSection !== 'ranking');
+  document.querySelectorAll('header .nav-btn[data-view="season"]').forEach(button => {
+    button.classList.toggle('active', button.dataset.seasonSection === seasonSection);
+  });
+}
+
 function showView(v, team = null) {
   if (!dataLoaded || !VIEWS.includes(v)) return;
 
   VIEWS.forEach(name => $(`view-${name}`).classList.toggle('hidden', name !== v));
-  document.querySelectorAll('header .nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  document.querySelectorAll('header .nav-btn[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === v &&
+      (v !== 'season' || b.dataset.seasonSection === seasonSection));
+  });
 
   // Par défaut : grille des écuries (le détail est affiché plus bas si une écurie est demandée)
   $('teamDetail').classList.add('hidden');
@@ -1672,7 +1719,13 @@ document.addEventListener('click', e => {
   if (raceEl) { navigate({ ...route, race: Number(raceEl.dataset.race), at: null }); return; }
 
   const viewEl = e.target.closest('[data-view]');
-  if (viewEl) { navigate({ view: viewEl.dataset.view }); return; }
+  if (viewEl) {
+    navigate({
+      view: viewEl.dataset.view,
+      section: viewEl.dataset.view === 'season' ? viewEl.dataset.seasonSection : undefined
+    });
+    return;
+  }
 
   const jumpEl = e.target.closest('[data-jump]');
   if (jumpEl) { navigate({ ...route, race: null, at: jumpEl.dataset.jump }); return; }
@@ -1710,7 +1763,7 @@ $('seasonSelect')?.addEventListener('change', e => {
   const year = Number(e.target.value || currentYear);
   if (!dataLoaded) { currentYear = year; return; }
   // Changer de saison ne crée pas d'entrée d'historique : on remplace l'entrée courante
-  navigate({ view: route.view, team: route.team, year }, { replace: true });
+  navigate({ view: route.view, team: route.team, year, section: route.section }, { replace: true });
 });
 window.matchMedia('(max-width: 620px)').addEventListener('change', () => {
   if (dataLoaded) renderLineup();

@@ -8,6 +8,20 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: 'F1-Black';
+  src: url('assets/fonts/Formula1-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'F1-Bold-4';
+  src: url('assets/fonts/Formula1-Bold-4.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ===============================
   VARIABLES & BASE
@@ -688,7 +702,7 @@ button.primary {
   width: 76px; flex: none; position: relative; z-index: 2;
   display: grid; place-items: center;
   background: linear-gradient(180deg, #ee1c10, var(--f1-red-dark));
-  font-family: var(--display); font-style: italic; font-size: 32px;
+  font-family: 'F1-Bold-4', var(--display); font-style: normal; font-size: 32px;
   clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
   text-shadow: 0 2px 6px rgba(0,0,0,.35);
 }
@@ -722,14 +736,14 @@ button.primary {
 }
 .rank-row:hover .rk-head { transform: scale(1.07); }
 
-.rk-name { position: relative; display: flex; flex-direction: column; min-width: 0; text-shadow: 0 2px 10px rgba(0,0,0,.4); }
+.rk-name { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; text-shadow: 0 2px 10px rgba(0,0,0,.4); }
 .rk-first { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .16em; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rk-last { font-family: var(--display); font-style: italic; text-transform: uppercase; font-size: clamp(20px, 2.1vw, 30px); line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.is-p1 .rk-last { font-size: clamp(24px, 2.6vw, 36px); }
+.rk-last { font-family: 'F1-Black', var(--display); font-style: normal; font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 1.8vw, 26px); line-height: 1.05; white-space: nowrap; overflow: visible; text-overflow: clip; }
+.is-p1 .rk-last { font-size: clamp(20px, 2.1vw, 30px); }
 .rk-team { font-size: 11px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .rk-meta { position: relative; margin-left: auto; text-align: right; display: flex; flex-direction: column; flex: none; text-shadow: 0 2px 8px rgba(0,0,0,.45); }
-.rk-meta b { font-family: var(--display); font-style: italic; font-size: 15px; text-transform: uppercase; }
+.rk-meta b { font-family: var(--display); font-style: normal; font-size: 15px; text-transform: uppercase; }
 .rk-meta small { font-size: 11px; opacity: .8; }
 
 .rk-car { position: relative; margin-left: auto; height: 86%; max-width: 46%; object-fit: contain; flex: 0 1 auto; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); transition: transform .35s var(--ease); }
@@ -757,18 +771,17 @@ button.primary {
   position: absolute;
   z-index: 0;
   top: 50%;
-  right: 0;
-  left: auto;
+  left: 50%;
   height: 100%;
-  width: auto;
-  max-width: none;
+  width: min(70%, 760px);
+  max-width: 70%;
   object-fit: contain;
-  object-position: right center;
+  object-position: center;
   opacity: .9;
-  transform: translateY(-50%);
-  transform-origin: right center;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
 }
-.rank-row.is-team:hover .rk-car { transform: translateY(-50%) scale(1.02); }
+.rank-row.is-team:hover .rk-car { transform: translate(-50%, -50%) scale(1.02); }
 .rank-row.is-team .rk-bar { z-index: 3; }
 
 /* Case points */
@@ -776,17 +789,17 @@ button.primary {
   width: 108px; flex: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: #15171a;
-  font-family: var(--display); font-style: italic;
+  font-family: 'F1-Black', var(--display); font-style: normal;
   margin-left: -1px;
 }
-.rk-pts b { font-size: 30px; line-height: 1; }
+.rk-pts b { font-family: 'F1-Black', var(--display); font-style: normal; font-weight: 900; font-size: 30px; line-height: 1; }
 .rk-pts small { font-family: var(--body); font-style: normal; font-weight: 700; font-size: 10px; letter-spacing: .24em; color: #ff3b30; margin-top: 4px; }
 .is-p1 .rk-pts { background: linear-gradient(180deg, #f2271b, var(--f1-red-dark)); box-shadow: inset 0 0 18px rgba(255,255,255,.18); }
 .is-p1 .rk-pts small { color: #fff; opacity: .85; }
 .is-p1 .rk-pts b { font-size: 36px; }
 
 /* Layout saison */
-.season-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: 32px; align-items: start; }
+.season-layout { display: block; }
 .season-calendar, .season-ranking-container { min-width: 0; }
 .season-calendar { container-type: inline-size; }
 .season-races-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -1050,29 +1063,28 @@ button.primary {
   content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
     repeating-linear-gradient(-58deg, rgba(0,0,0,.12) 0 24px, transparent 24px 60px),
-    linear-gradient(90deg, rgba(0,0,0,.45), transparent 65%);
+    linear-gradient(270deg, rgba(0,0,0,.55), transparent 60%);
 }
 .team-card:hover { transform: translateY(-6px); filter: brightness(1.1); }
 .team-car-preview {
-  /* Voiture XXL : on ne voit que ~3/4 de la voiture (à partir de la gauche),
-     le reste est coupé par le bord droit de la carte. Les roues dépassent
-     légèrement sous le bas de la carte pour donner l'effet "gros plan". */
-  --car-left: 34%;     /* début de la voiture (depuis la gauche de la carte) */
-  --car-width: 88%;    /* largeur totale de la voiture : (100% - left) / 0.75 */
-  --car-drop: -9%;     /* négatif = les roues sont rognées par le bas */
+  /* Voiture XXL qui "sort" du bord gauche : le quart gauche de la voiture est
+     hors de la carte (coupé), on voit les 3/4 restants. Les roues sont
+     légèrement rognées par le bas de la carte. */
+  --car-width: 88%;                              /* largeur totale de la voiture */
+  --car-left: calc(var(--car-width) * -0.25);    /* 1/4 de la voiture hors carte, à gauche */
+  --car-drop: -9%;                               /* négatif = roues rognées par le bas */
   position: absolute; left: var(--car-left); bottom: var(--car-drop);
-  width: var(--car-width); height: 100%;
+  width: var(--car-width); height: 160%;
   background-size: 100% auto; background-repeat: no-repeat; background-position: left bottom;
-  transform-origin: left bottom;
+  transform-origin: 25% 100%;   /* = bord gauche de la carte : le zoom ne décale pas la voiture */
   z-index: 1;
   filter: grayscale(0) drop-shadow(0 8px 12px rgba(0,0,0,.5));
   will-change: transform, filter;
-  /* Une seule déclaration de transition pour tout (évite qu'une règle plus
-     spécifique n'écrase celle du transform et ne fasse "popper" la voiture). */
   transition: transform .75s var(--ease), filter .75s ease, opacity .75s ease;
 }
-.team-card:hover .team-car-preview { transform: translateX(-10px) scale(1.06); }
-.team-card-info { position: absolute; z-index: 3; left: 0; top: 0; bottom: 0; width: 55%; padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; }
+.team-card:hover .team-car-preview { transform: scale(1.05); }
+/* Texte à droite (la voiture occupe la gauche) */
+.team-card-info { position: absolute; z-index: 3; right: 0; top: 0; bottom: 0; width: 42%; padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; text-align: right; }
 .tc-logo { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,.5)); }
 .team-card-info h4 { font-size: 20px; line-height: 1.05; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
 .team-card-info .muted { color: rgba(255,255,255,.8); }
@@ -1639,10 +1651,6 @@ button.primary {
   RESPONSIVE
   =============================== */
 @media (max-width: 900px) {
-  .season-layout { grid-template-columns: 1fr; gap: 40px; }
-}
-
-@media (max-width: 900px) {
   header { flex-wrap: wrap; padding: 10px 16px; }
   .brand { order: 1; }
   .header-controls { order: 2; }
@@ -1708,6 +1716,8 @@ button.primary {
   .rk-logo { width: 32px; height: 32px; }
   .rk-logo.lg { width: 38px; height: 38px; }
   .rk-head { width: 78px; }
+  .rank-row:not(.is-team) .rk-logo { display: none; }
+  .rank-row:not(.is-team) .rk-head { width: 58px; }
   .rk-last { font-size: 18px; }
   .rk-meta, .rk-team { display: none; }
   .rk-car { max-width: 38%; }
@@ -1718,7 +1728,7 @@ button.primary {
   .rank-row.is-team .rk-band { gap: 8px; padding-right: 10px; padding-left: 22px; }
   .rank-row.is-team .rk-logo.lg { width: 42px; height: 42px; }
   .rank-row.is-team .rk-last { font-size: clamp(13px, 3.2vw, 18px); }
-  .rank-row.is-team .rk-car { height: 100%; opacity: .82; }
+  .rank-row.is-team .rk-car { height: 100%; width: 70%; max-width: 70%; opacity: .82; }
 
   .modal--race-results .modal-card { max-height: 94vh; }
   .race-results { padding: 14px 14px 20px; }

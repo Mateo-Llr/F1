@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>F1 — Saison</title>
+  <title>F1 — Calendrier et classement</title>
   <link rel="icon" href="icon.ico" sizes="any">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,8 @@
     </div>
     <nav>
       <button class="nav-btn active" data-view="courses">Accueil</button>
-      <button class="nav-btn" data-view="season">Saison</button>
+      <button class="nav-btn" data-view="season" data-season-section="calendar">Calendrier</button>
+      <button class="nav-btn" data-view="season" data-season-section="ranking">Classement</button>
       <button class="nav-btn" data-view="drivers">Conducteurs</button>
       <button class="nav-btn" data-view="teams">Écuries</button>
       <button class="nav-btn" data-view="lineup">Line-up</button>
@@ -97,7 +98,7 @@
       <div class="section-head">
         <h3>Top 5 du championnat</h3>
         <span class="section-line"></span>
-        <button class="btn-skew ghost" data-view="season">Classement complet</button>
+        <button class="btn-skew ghost" data-view="season" data-season-section="ranking">Classement complet</button>
       </div>
       <div class="rank-list home-podium" id="homeStandings"></div>
     </section>
@@ -107,7 +108,7 @@
       <div class="page-head">
         <div>
           <span class="kicker">Championnat du monde</span>
-          <h2>Saison <em id="seasonYearLabel">2026</em></h2>
+          <h2><span id="seasonSectionTitle">Calendrier</span> <em id="seasonYearLabel">2026</em></h2>
         </div>
         <div class="season-toolbar">
           <div class="season-progress">
@@ -118,7 +119,7 @@
       </div>
 
       <div class="season-layout">
-        <div class="season-calendar">
+        <div id="seasonCalendar" class="season-calendar">
           <div class="toolbar">
             <h3>Calendrier</h3>
             <div class="chips" id="raceFilters">
@@ -130,7 +131,7 @@
           <div class="season-races-list" id="seasonRacesList"></div>
         </div>
 
-        <div class="season-ranking-container">
+        <div id="seasonRanking" class="season-ranking-container hidden">
           <div class="toolbar">
             <div class="chips" id="rankTabs">
               <button class="chip active" data-rank="drivers">Pilotes</button>
