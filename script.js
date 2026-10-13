@@ -702,15 +702,39 @@ function teamRankRow(t, i, maxPts) {
 /* ===============================
   COMPOSANT : TUILE DE COURSE
   =============================== */
-function raceTile(r, round, nextId, i = 0, calendarMode = false) {
+function raceTile(r, round, nextId, i = 0, calendarMode = false, latestCompletedId = null) {
   const past = isRaceCompleted(r);
   const state = past ? 'past' : (r.id === nextId ? 'next' : 'future');
   const podium = past ? r.classification.slice(0, 3) : [];
+  const winner = podium[0] || null;
   const year = raceYear(r) || currentYear;
 
   let c1 = '#e10600', c2 = '#8a0500';
-  if (podium[0]) [c1, c2] = teamColors(getTeamOfDriver(podium[0].name, year));
-  else if (calendarMode) [c1, c2] = ['#5a5d66', '#2c2e34'];   // course pas encore disputée : pan gris neutre
+  if (winner) [c1, c2] = teamColors(getTeamOfDriver(winner.name, year));
+
+  if (calendarMode) {
+    const team = winner ? getTeamOfDriver(winner.name, year) : null;
+    const raceDate = fmtDate(r.date, { day: 'numeric', month: 'long' });
+    const cardTitle = winner ? lastName(winner.name) : (r.country || r.location);
+    const ariaLabel = winner ? `${winner.name}, vainqueur du ${r.name}` : cardTitle;
+
+    return `
+      <article class="race-tile is-calendar is-${state}${winner ? ' has-winner' : ''}${latestCompletedId != null && r.id === latestCompletedId ? ' is-last-completed' : ''}" data-race="${r.id}" style="--i:${i};--c1:${c1};--c2:${c2}" aria-label="Round ${round}, ${ariaLabel}">
+        <div class="rt-calendar-copy">
+          <div class="rt-meta">
+            ${r.flag ? `<img class="rt-flag" src="https://flagcdn.com/w40/${r.flag}.png" alt="" loading="lazy" ${hideOnError}>` : ''}
+            <span>ROUND ${String(round).padStart(2, '0')} | ${winner ? r.name : raceDate}</span>
+          </div>
+          <h4 class="rt-name">${cardTitle}</h4>
+        </div>
+        ${winner ? `
+          <img class="rt-team-watermark" src="${team ? getTeamLogoPath(team) : FALLBACK_LOGO}" alt="" aria-hidden="true" loading="lazy" ${hideOnError}>
+          <img class="rt-driver" src="${getDriverImg(winner.name, year)}" alt="" aria-hidden="true" loading="lazy" ${hideOnError}>
+        ` : `
+          <img class="rt-circuit" src="${getCircuitImagePath(r.location)}" alt="" aria-hidden="true" loading="lazy" ${hideOnError}>
+        `}
+      </article>`;
+  }
 
   let badge = '';
   if (state === 'next') badge = '<span class="rt-badge is-next">Prochaine</span>';
@@ -726,13 +750,13 @@ function raceTile(r, round, nextId, i = 0, calendarMode = false) {
     </div>` : '';
 
   return `
-    <article class="race-tile is-${state}${calendarMode ? ` is-calendar${i % 4 === 1 || i % 4 === 2 ? ' is-light' : ''}` : ''}" data-race="${r.id}" style="--i:${i};--c1:${c1};--c2:${c2}">
+    <article class="race-tile is-${state}" data-race="${r.id}" style="--i:${i};--c1:${c1};--c2:${c2}">
       <div class="rt-round"><small>RD</small><b>${round}</b></div>
       <div class="rt-body">
         <div class="rt-head">
-          <div class="rt-meta"><span class="rt-date">${fmtDate(r.date)}</span>${calendarMode ? '' : badge}</div>
+          <div class="rt-meta"><span class="rt-date">${fmtDate(r.date)}</span>${badge}</div>
           <h4 class="rt-name">${r.name}</h4>
-          <p class="rt-loc">${calendarMode ? `<img class="rt-flag" src="https://flagcdn.com/w40/${r.flag}.png" alt="" loading="lazy" ${hideOnError}>` : ''}${r.location}</p>
+          <p class="rt-loc">${r.location}</p>
         </div>
         ${podiumHtml}
       </div>
@@ -864,13 +888,15 @@ function renderSeasonProgress() {
 function renderSeasonRaces() {
   const list = seasonRaces();
   const next = list.find(r => !isRaceCompleted(r));
+  const completed = list.filter(isRaceCompleted);
+  const latestCompletedId = completed.length ? completed[completed.length - 1].id : null;
 
   const items = list
     .map((r, idx) => ({ r, round: idx + 1 }))
     .filter(({ r }) => raceFilter === 'all' || (raceFilter === 'done' ? isRaceCompleted(r) : !isRaceCompleted(r)));
 
   $('seasonRacesList').innerHTML = items.length
-    ? items.map(({ r, round }, i) => raceTile(r, round, next ? next.id : null, i, true)).join('')
+    ? items.map(({ r, round }, i) => raceTile(r, round, next ? next.id : null, i, true, latestCompletedId)).join('')
     : '<p class="empty">Aucune course dans cette catégorie.</p>';
 }
 

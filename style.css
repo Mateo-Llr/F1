@@ -616,77 +616,147 @@ button.primary {
 .rt-circuit { position: absolute; right: 14px; top: 12px; width: 84px; height: 64px; object-fit: contain; opacity: .92; }
 .rt-podium { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .race-tile.is-calendar {
-  min-height: 120px;
-  background: #101115;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  display: block;
+  height: 58px;
+  min-height: 58px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 14px;
+  background:
+    linear-gradient(110deg, rgba(76,25,27,.96), rgba(44,23,25,.96)),
+    #351b1d;
+  clip-path: none;
+  isolation: isolate;
+  overflow: visible;
 }
+.race-tile.is-calendar::before,
 .race-tile.is-calendar::after {
   content: '';
   position: absolute;
-  left: 58px;
-  right: 0;
-  bottom: 0;
-  height: 5px;
-  background: repeating-linear-gradient(90deg, rgba(255,255,255,.15) 0 5px, transparent 5px 10px);
+  inset: 0;
   pointer-events: none;
 }
-.race-tile.is-calendar.is-light { background: #f2f2f0; color: #17181b; }
-.race-tile.is-calendar .rt-round {
-  width: 58px;
-  background: linear-gradient(180deg, var(--c1), var(--c2));   /* couleurs de l'écurie du vainqueur */
-  clip-path: polygon(0 0, 100% 0, calc(100% - 13px) 100%, 0 100%);
+.race-tile.is-calendar::before {
+  z-index: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 42px,
+    rgba(245,37,32,.1) 43px 45px,
+    transparent 46px 73px
+  );
 }
-.race-tile.is-calendar .rt-round small { display: none; }
-.race-tile.is-calendar .rt-round b { font-size: 30px; }
-.race-tile.is-calendar .rt-body {
+.race-tile.is-calendar::after {
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent 35%, rgba(245,37,32,.08));
+}
+.race-tile.is-calendar.has-winner {
+  background: linear-gradient(105deg, var(--c1), var(--c2));
+}
+.race-tile.is-calendar.has-winner::before {
+  background:
+    linear-gradient(90deg, transparent 45%, rgba(0,0,0,.17)),
+    repeating-linear-gradient(135deg, transparent 0 42px, rgba(255,255,255,.08) 43px 45px, transparent 46px 73px);
+}
+.race-tile.is-calendar .rt-calendar-copy {
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  right: 82px;
+  left: 12px;
+  min-width: 0;
+}
+.race-tile.is-calendar.has-winner .rt-calendar-copy { right: 112px; }
+.race-tile.is-calendar .rt-meta {
   display: flex;
   align-items: center;
-  min-height: 120px;
-  margin-left: -8px;
-  padding: 12px 108px 14px 8px;
-}
-.race-tile.is-calendar .rt-head { padding-right: 0; }
-.race-tile.is-calendar .rt-meta {
-  color: #b8b9bf;
-  font-size: 10px;
-  letter-spacing: .13em;
-}
-.race-tile.is-calendar.is-light .rt-meta { color: #55565b; }
-.race-tile.is-calendar .rt-date::before {
-  content: '●';
-  color: #ff7900;
-  margin-right: 8px;
+  gap: 6px;
+  overflow: hidden;
+  color: rgba(255,255,255,.78);
+  font-family: 'F1-Bold-4', var(--display);
   font-size: 8px;
+  font-style: normal;
+  letter-spacing: .07em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.race-tile.is-calendar .rt-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.race-tile.is-calendar .rt-flag {
+  width: 12px;
+  height: 9px;
+  flex: none;
+  border-radius: 1px;
+  object-fit: cover;
 }
 .race-tile.is-calendar .rt-name {
-  margin: 5px 0 3px;
-  font-size: clamp(15px, 1.5vw, 20px);
-  line-height: 1.12;
+  overflow: hidden;
+  margin: 3px 0 0;
+  font-family: 'F1-Black', var(--display);
+  font-size: clamp(16px, 1.75vw, 25px);
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-.race-tile.is-calendar.is-light .rt-name { color: #17181b; }
-.race-tile.is-calendar .rt-loc {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #aeb0b7;
-  font-size: 11px;
-}
-.race-tile.is-calendar.is-light .rt-loc { color: #55565b; }
-.race-tile.is-calendar .rt-flag { width: 23px; height: 15px; }
+.race-tile.is-calendar.is-future { opacity: 1; }
 .race-tile.is-calendar .rt-circuit {
   top: 50%;
-  right: 15px;
-  width: 92px;
-  height: 76px;
+  right: 11px;
+  z-index: 2;
+  width: 65px;
+  height: 46px;
   transform: translateY(-50%);
-  filter: grayscale(1) brightness(1.7);
+  filter: brightness(0) invert(1);
+  opacity: .92;
 }
-.race-tile.is-calendar.is-light .rt-circuit { filter: grayscale(1) brightness(.35); }
-.race-tile.is-calendar.is-light::after { background: repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 5px, transparent 5px 10px); }
-@container (max-width: 560px) {
-  .race-tile.is-calendar .rt-round { width: 46px; }
-  .race-tile.is-calendar .rt-body { padding-right: 66px; }
-  .race-tile.is-calendar .rt-circuit { right: 8px; width: 54px; height: 54px; }
+.race-tile.is-calendar .rt-team-watermark {
+  position: absolute;
+  top: 50%;
+  right: 88px;
+  z-index: 0;
+  width: 88px;
+  height: 56px;
+  transform: translateY(-50%);
+  object-fit: contain;
+  opacity: .2;
+}
+.race-tile.is-calendar .rt-driver {
+  position: absolute;
+  right: 14px;
+  bottom: 0;
+  z-index: 2;
+  width: 116px;
+  height: 104px;
+  object-fit: cover;
+  object-position: center top;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+}
+.race-tile.is-calendar.is-last-completed {
+  z-index: 1;
+  border-color: rgba(255,255,255,.96);
+  box-shadow: 0 0 14px rgba(255,22,10,.75), inset 0 0 16px rgba(255,40,12,.24);
+  animation: rowIn .5s var(--ease) both, calendarGlow 1.8s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+@keyframes calendarGlow {
+  from { box-shadow: 0 0 8px rgba(255,22,10,.5), inset 0 0 10px rgba(255,40,12,.16); }
+  to { box-shadow: 0 0 22px rgba(255,22,10,.9), inset 0 0 20px rgba(255,40,12,.38); }
+}
+@media (max-width: 620px) {
+  .race-tile.is-calendar { height: 62px; min-height: 62px; }
+  .race-tile.is-calendar .rt-calendar-copy { top: 8px; right: 72px; left: 10px; }
+  .race-tile.is-calendar.has-winner .rt-calendar-copy { right: 102px; }
+  .race-tile.is-calendar .rt-meta { font-size: 7px; }
+  .race-tile.is-calendar .rt-name { font-size: clamp(16px, 5vw, 22px); }
+  .race-tile.is-calendar .rt-circuit { right: 8px; width: 58px; height: 42px; }
+  .race-tile.is-calendar .rt-team-watermark { right: 78px; }
+  .race-tile.is-calendar .rt-driver { right: 14px; bottom: 0; width: 100px; height: 90px; }
 }
 .pod {
   --c: #666;
@@ -830,8 +900,12 @@ button.primary {
 .season-layout { display: block; }
 .season-calendar, .season-ranking-container { min-width: 0; }
 .season-calendar { container-type: inline-size; }
-.season-races-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.season-races-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 .empty { color: rgba(255,255,255,.55); font-style: italic; padding: 20px 0; }
+
+@media (min-width: 1440px) {
+  .season-races-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 
 .season-ranking-container { min-width: 0; }
 .rank-sub { font-family: var(--display); font-style: italic; text-transform: uppercase; font-size: 18px; letter-spacing: .04em; color: var(--lime); }
@@ -1710,8 +1784,8 @@ button.primary {
   header { flex-wrap: wrap; padding: 10px 16px; }
   .brand { order: 1; }
   .header-controls { order: 2; }
-  nav { order: 3; width: 100%; overflow-x: auto; }
-  .nav-btn { padding: 10px 16px; font-size: 12px; white-space: nowrap; }
+  nav { order: 3; width: 100%; flex-wrap: wrap; overflow: visible; }
+  .nav-btn { flex: none; padding: 10px 16px; font-size: 12px; white-space: nowrap; }
   .brand-sub { display: none; }
   .hero-card { grid-template-columns: 1fr; }
   .hero-art { min-height: 200px; }
