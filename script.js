@@ -65,11 +65,12 @@ const COUNTRY_CODES = {
 const NATIONALITY_CODES = {
   'allemand': 'de', 'americain': 'us', 'argentin': 'ar', 'australien': 'au', 'autrichien': 'at', 'belge': 'be',
   'britannique': 'gb', 'united kingdom': 'gb', 'bresilien': 'br', 'canadien': 'ca', 'chinois': 'cn',
-  'colombien': 'co', 'danois': 'dk', 'espagnol': 'es', 'finlandais': 'fi', 'francais': 'fr', 'hongrois': 'hu',
-  'indien': 'in', 'indonesien': 'id', 'irlandais': 'ie', 'italien': 'it', 'japonais': 'jp', 'malaisien': 'my',
+  'chilien': 'cl', 'colombien': 'co', 'danois': 'dk', 'espagnol': 'es', 'finlandais': 'fi', 'francais': 'fr', 'hongrois': 'hu',
+  'indien': 'in', 'indonesien': 'id', 'irlandais': 'ie', 'italien': 'it', 'japonais': 'jp', 'liechtensteinois': 'li', 'malaisien': 'my',
+  'marocain': 'ma',
   'mexicain': 'mx', 'monegasque': 'mc', 'neerlandais': 'nl', 'neo-zelandais': 'nz', 'polonais': 'pl',
-  'portugais': 'pt', 'russe': 'ru', 'suisse': 'ch', 'suedois': 'se', 'tcheque': 'cz', 'thailandais': 'th',
-  'venezuelien': 've'
+  'portugais': 'pt', 'russe': 'ru', 'sud-africain': 'za', 'suisse': 'ch', 'suedois': 'se', 'tcheque': 'cz',
+  'thailandais': 'th', 'uruguayen': 'uy', 'venezuelien': 've', 'zimbabween': 'zw'
 };
 function lookupCode(table, name) {
   const norm = String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
@@ -194,7 +195,11 @@ function processData(workbook) {
       .filter(h => h.name === baseTeam.name)
       .map(h => ({
         year: h.year,
-        drivers: [h.driver1, h.driver2, h.driver3].filter(d => d),
+        drivers: Object.keys(h)
+          .filter(key => /^driver\d+$/.test(key))
+          .sort((a, b) => Number(a.slice(6)) - Number(b.slice(6)))
+          .map(key => h[key])
+          .filter(Boolean),
         engine: h.moteur || '',
         pos: Number(h.pos_constructeurs) || null,
         points: h.points ?? null,
@@ -1165,54 +1170,150 @@ function renderTeamTimeline(container) {
 
   const minYear = Math.min(...allSegs.map(s => s.start));
   const maxYear = Math.max(...allSegs.map(s => s.end));
-  const total = maxYear - minYear + 1;
-  const pct = y => ((y - minYear) / total) * 100;
-  const mid = y => pct(y) + 50 / total; // milieu de la saison y
+  const defaultStart = Math.min(Math.max(2000, minYear), maxYear);
+  let startYear = defaultStart;
+  let endYear = Math.min(Math.max(currentYear, startYear), maxYear);
+  const yearRange = maxYear - minYear;
+  const yearToPercent = year => yearRange ? ((year - minYear) / yearRange) * 100 : 0;
 
-  // Graduations tous les 5 ans (+ première et dernière saison, sans chevauchement)
+  container.innerHTML = `
+    <div class="section-head teams-timeline-head">
+      <h3>Frise chronologique</h3><span class="section-line"></span>
+      <span class="muted tl-hint">survolez une écurie</span>
+    </div>
+    <div class="tl-range" aria-label="Choisir la période affichée sur la frise">
+      <div class="tl-range-values">
+        <label>Début <output class="tl-range-start">${startYear}</output></label>
+        <label>Fin <output class="tl-range-end">${endYear}</output></label>
+      </div>
+      <div class="tl-range-track" style="--range-start:${yearToPercent(startYear)}%;--range-end:${yearToPercent(endYear)}%">
+        <button class="tl-range-thumb tl-range-thumb-start" type="button" role="slider" aria-label="Année de début"></button>
+        <button class="tl-range-thumb tl-range-thumb-end" type="button" role="slider" aria-label="Année de fin"></button>
+      </div>
+      <div class="tl-range-limits"><span>${minYear}</span><span>${maxYear}</span></div>
+    </div>
+    <div class="tl-scroll">
+      <div class="tl-board"></div>
+    </div>`;
+
+  const board = container.querySelector('.tl-board');
+  const startThumb = container.querySelector('.tl-range-thumb-start');
+  const endThumb = container.querySelector('.tl-range-thumb-end');
+  const rangeTrack = container.querySelector('.tl-range-track');
+  const startOutput = container.querySelector('.tl-range-start');
+  const endOutput = container.querySelector('.tl-range-end');
+  let activeThumb = null;
+  const setThumbYear = clientX => {
+    const rect = rangeTrack.getBoundingClientRect();
+    const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const year = minYear + Math.round(percent * yearRange);
+    if (activeThumb === startThumb) startYear = Math.min(year, endYear - 1);
+    else if (activeThumb === endThumb) endYear = Math.max(year, startYear + 1);
+    renderRange();
+  };
+  const renderRange = () => {
+    startOutput.value = String(startYear);
+    startOutput.textContent = String(startYear);
+    endOutput.value = String(endYear);
+    endOutput.textContent = String(endYear);
+    rangeTrack.style.setProperty('--range-start', `${yearToPercent(startYear)}%`);
+    rangeTrack.style.setProperty('--range-end', `${yearToPercent(endYear)}%`);
+    startThumb.style.left = `${yearToPercent(startYear)}%`;
+    startThumb.setAttribute('aria-valuemin', String(minYear));
+    startThumb.setAttribute('aria-valuemax', String(endYear - 1));
+    startThumb.setAttribute('aria-valuenow', String(startYear));
+    startThumb.setAttribute('aria-valuetext', String(startYear));
+    endThumb.style.left = `${yearToPercent(endYear)}%`;
+    endThumb.setAttribute('aria-valuemin', String(startYear + 1));
+    endThumb.setAttribute('aria-valuemax', String(maxYear));
+    endThumb.setAttribute('aria-valuenow', String(endYear));
+    endThumb.setAttribute('aria-valuetext', String(endYear));
+    renderTimelineBoard(board, lanes, startYear, endYear);
+  };
+
+  rangeTrack.addEventListener('pointerdown', event => {
+    const startRect = startThumb.getBoundingClientRect();
+    const endRect = endThumb.getBoundingClientRect();
+    const startCenter = startRect.left + startRect.width / 2;
+    const endCenter = endRect.left + endRect.width / 2;
+    activeThumb = Math.abs(event.clientX - startCenter) <= Math.abs(event.clientX - endCenter) ? startThumb : endThumb;
+    activeThumb.focus();
+    rangeTrack.setPointerCapture(event.pointerId);
+    setThumbYear(event.clientX);
+    event.preventDefault();
+  });
+  rangeTrack.addEventListener('pointermove', event => {
+    if (!activeThumb) return;
+    setThumbYear(event.clientX);
+  });
+  const releaseThumb = () => { activeThumb = null; };
+  rangeTrack.addEventListener('pointerup', releaseThumb);
+  rangeTrack.addEventListener('pointercancel', releaseThumb);
+  [startThumb, endThumb].forEach(thumb => {
+    thumb.addEventListener('keydown', event => {
+      const isStart = thumb === startThumb;
+      const min = isStart ? minYear : startYear + 1;
+      const max = isStart ? endYear - 1 : maxYear;
+      const value = isStart ? startYear : endYear;
+      const step = event.key === 'PageUp' || event.key === 'PageDown' ? 5 : 1;
+      let next;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === 'PageDown') next = value - step;
+      else if (event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'PageUp') next = value + step;
+      else if (event.key === 'Home') next = min;
+      else if (event.key === 'End') next = max;
+      else return;
+      event.preventDefault();
+      if (isStart) startYear = Math.max(min, Math.min(next, max));
+      else endYear = Math.max(min, Math.min(next, max));
+      renderRange();
+    });
+  });
+
+  renderRange();
+  bindTimelineTooltip(container, maxYear);
+}
+
+function renderTimelineBoard(board, lanes, startYear, endYear) {
+  const total = endYear - startYear + 1;
+  const pct = year => ((year - startYear) / total) * 100;
+  const mid = year => pct(year) + 50 / total;
   const ticks = [];
-  for (let y = minYear; y <= maxYear; y++) {
-    if (y === minYear || y === maxYear || (y % 5 === 0 && y - minYear >= 2 && maxYear - y >= 2)) ticks.push(y);
+  for (let year = startYear; year <= endYear; year++) {
+    if (year === startYear || year === endYear || (year % 5 === 0 && year - startYear >= 2 && endYear - year >= 2)) ticks.push(year);
   }
-  const cyTick = Math.min(Math.max(currentYear, minYear), maxYear);
-  const axisHtml = ticks.filter(y => y !== cyTick).map(y => `<span class="tl-tick" style="left:${mid(y)}%">${y}</span>`).join('');
-  const gridHtml = ticks.map(y => `<i class="tl-gridline" style="left:${mid(y)}%"></i>`).join('');
+  const cy = currentYear >= startYear && currentYear <= endYear ? currentYear : null;
+  const axisHtml = ticks.filter(year => year !== cy).map(year => {
+    const edgeClass = year === startYear ? ' is-first' : year === endYear ? ' is-last' : '';
+    return `<span class="tl-tick${edgeClass}" style="left:${mid(year)}%">${year}</span>`;
+  }).join('');
+  const gridHtml = ticks.map(year => `<i class="tl-gridline" style="left:${mid(year)}%"></i>`).join('');
 
   const lanesHtml = lanes.map(lane => {
-    const segs = lane.segments.map(s => {
+    const segs = lane.segments.filter(s => s.end >= startYear && s.start <= endYear).map(s => {
       const t = s.team;
-      const years = s.end - s.start + 1;
+      const visibleStart = Math.max(s.start, startYear);
+      const visibleEnd = Math.min(s.end, endYear);
+      const years = visibleEnd - visibleStart + 1;
       const size = years >= 3 ? 'is-wide' : years >= 2 ? 'is-mid' : 'is-thin';
       const current = hasTeamLineup(t, currentYear) && currentYear >= s.start && currentYear <= s.end;
       return `<div class="tl-seg ${size}${current ? ' is-current' : ''}"
           data-team="${t.name.replace(/"/g, '&quot;')}" data-start="${s.start}" data-end="${s.end}"
-          style="left:${pct(s.start)}%;width:${(years / total) * 100}%;--c1:${t.color};--c2:${t.color2 || t.color};--fg:${readableTextColor(t.color)}">
+          style="left:${pct(visibleStart)}%;width:${(years / total) * 100}%;--c1:${t.color};--c2:${t.color2 || t.color};--fg:${readableTextColor(t.color)}">
           <img class="tl-logo" src="${getTeamLogoPath(t)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('no-logo');this.remove()">
           <span class="tl-abbr">${t.name.split(' ')[0].slice(0, 3)}</span>
           <span class="tl-name">${t.name}</span>
         </div>`;
     }).join('');
-    return `<div class="tl-lane">${segs}</div>`;
+    return segs ? `<div class="tl-lane">${segs}</div>` : '';
   }).join('');
 
-  const cy = Math.min(Math.max(currentYear, minYear), maxYear);
-  container.innerHTML = `
-    <div class="section-head teams-timeline-head">
-      <h3>Frise chronologique</h3><span class="section-line"></span>
-      <span class="muted tl-hint">${minYear} – ${maxYear} · survolez une écurie</span>
-    </div>
-    <div class="tl-scroll">
-      <div class="tl-board">
-        <div class="tl-axis">${axisHtml}</div>
-        <div class="tl-body">
-          <div class="tl-grid">${gridHtml}</div>
-          <div class="tl-now" style="left:${mid(cy)}%"><b>${cy}</b></div>
-          ${lanesHtml}
-        </div>
-      </div>
+  board.innerHTML = `
+    <div class="tl-axis">${axisHtml}</div>
+    <div class="tl-body">
+      <div class="tl-grid">${gridHtml}</div>
+      ${cy === null ? '' : `<div class="tl-now${pct(cy) < 5 ? ' is-edge-left' : pct(cy) > 90 ? ' is-edge-right' : ''}" style="left:${mid(cy)}%"><b>${cy}</b></div>`}
+      ${lanesHtml}
     </div>`;
-
-  bindTimelineTooltip(container, maxYear);
 }
 
 /* Infobulle de la frise (une seule pour toute la page) */

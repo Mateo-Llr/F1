@@ -1919,6 +1919,29 @@ button.primary {
 .teams-timeline-head { margin: 28px 0 14px; }
 .tl-hint { white-space: nowrap; }
 
+.tl-range { margin: 0 0 18px; }
+.tl-range-values, .tl-range-limits { display: flex; justify-content: space-between; align-items: center; }
+.tl-range-values { margin-bottom: 2px; color: var(--muted); font-size: 11px; }
+.tl-range-values label { display: flex; align-items: center; gap: 7px; }
+.tl-range-values output { color: var(--lime); font-family: var(--display); font-size: 13px; font-weight: 700; }
+.tl-range-limits { color: var(--muted); font-size: 10px; }
+.tl-range-track { position: relative; height: 28px; margin: 0 9px; touch-action: none; --range-start: 0%; --range-end: 100%; }
+.tl-range-track::before, .tl-range-track::after {
+  content: ""; position: absolute; top: 12px; height: 4px; border-radius: 4px;
+}
+.tl-range-track::before { inset-inline: 0; background: rgba(255,255,255,.14); }
+.tl-range-track::after {
+  left: var(--range-start); right: calc(100% - var(--range-end));
+  background: var(--lime); pointer-events: none;
+}
+.tl-range-thumb {
+  position: absolute; top: 5px; z-index: 1; width: 18px; height: 18px; padding: 0;
+  border: 3px solid var(--bg); border-radius: 50%; background: var(--lime);
+  box-shadow: 0 0 0 2px var(--lime); cursor: grab; transform: translateX(-50%);
+}
+.tl-range-thumb:focus-visible { z-index: 2; outline: 2px solid #fff; outline-offset: 3px; }
+.tl-range-thumb:active { cursor: grabbing; }
+
 .tl-scroll { overflow-x: auto; padding-bottom: 8px; }
 .tl-board { min-width: 920px; }
 
@@ -1929,6 +1952,8 @@ button.primary {
   font-family: var(--display); font-style: italic; font-size: 12px; letter-spacing: .06em;
   color: rgba(255,255,255,.65);
 }
+.tl-tick.is-first { transform: translateX(0); }
+.tl-tick.is-last { transform: translateX(-100%); }
 
 .tl-body { position: relative; padding: 10px 0 4px; }
 .tl-grid { position: absolute; inset: 0; pointer-events: none; }
@@ -1945,6 +1970,8 @@ button.primary {
   font-family: var(--display); font-style: italic; font-size: 11px;
   clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 5px 100%);
 }
+.tl-now.is-edge-left b { left: 0; transform: translate(0, -100%); }
+.tl-now.is-edge-right b { left: auto; right: 0; transform: translate(0, -100%); }
 
 /* Pistes */
 .tl-lane { position: relative; height: 38px; margin-bottom: 6px; }

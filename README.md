@@ -10,7 +10,7 @@ Pour mettre à jour les données, remplacez `datas.xlsx` en conservant les noms 
 
 ## Frise chronologique des écuries
 
-L’onglet `Historique_Écuries` contient les saisons des constructeurs engagés de 1950 à 1999, y compris les Indianapolis 500 comptant pour le championnat. Les écuries sont regroupées par constructeur : plusieurs entrants utilisant le même constructeur ne créent donc pas de lignes distinctes dans la frise. Ces données historiques proviennent des listes saisonnières de [F1DB](https://github.com/f1db/f1db), sous licence CC BY 4.0.
+L’onglet `Historique_Écuries` contient les saisons des constructeurs engagés de 1950 à 1999, y compris les Indianapolis 500 comptant pour le championnat. Les écuries sont regroupées par constructeur : plusieurs entrants utilisant le même constructeur ne créent donc pas de lignes distinctes dans la frise. L’onglet `Conducteurs` et les saisons d’écuries incluent aussi les pilotes inscrits dans ces engagements. Ces données historiques proviennent des listes saisonnières et des fiches pilotes de [F1DB](https://github.com/f1db/f1db), sous licence CC BY 4.0.
 
 ## Images des pilotes et des écuries
 
