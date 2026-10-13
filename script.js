@@ -419,11 +419,12 @@ function calculateTeamRanking() {
 const DRIVER_IMAGE_YEARS = {
   aitken: [2022],
   albon: [2022, 2024, 2025, 2026],
-  alonso: [2003, 2004, 2017, 2021, 2022, 2023, 2024, 2025, 2026],
+  alonso: [2003, 2004, 2010, 2017, 2021, 2022, 2023, 2024, 2025, 2026],
   antonelli: [2025, 2026],
   bearman: [2025],
   bortoleto: [2025, 2026],
   bottas: [2017, 2022, 2023, 2024, 2026],
+  button: [2010],
   buemi: [2022],
   carlos: [2016, 2026],
   colapinto: [2025, 2026],
@@ -431,14 +432,17 @@ const DRIVER_IMAGE_YEARS = {
   doohan: [2024, 2025],
   drugovich: [2023],
   ericsson: [2017],
+  fisichella: [2006],
   fittipaldi: [2022, 2023],
   gasly: [2022, 2023, 2024, 2025, 2026],
   giovinazzi: [2022, 2023],
   grosjean: [2016, 2020],
+  gutierrez: [2013],
   hadjar: [2025, 2026],
-  hamilton: [2017, 2022, 2023, 2024, 2025, 2026],
+  hamilton: [2008, 2011, 2017, 2022, 2023, 2024, 2025, 2026],
   hartley: [2018],
   hulkenberg: [2017, 2022, 2024, 2025, 2026],
+  j_verstappen: [2003],
   kubica: [2022],
   kvyat: [2020],
   kyvat: [2017],
@@ -448,13 +452,14 @@ const DRIVER_IMAGE_YEARS = {
   lindblad: [2026],
   m_schumacher: [2022, 2023],
   magnussen: [2017, 2022, 2024],
-  massa: [2017],
+  massa: [2010, 2017],
   mazepin: [2021],
   norris: [2022, 2024, 2025, 2026],
   ocon: [2017, 2021, 2022, 2024, 2025, 2026],
+  paffett: [2008],
   palmer: [2017],
   palou: [2023],
-  perez: [2017, 2022, 2023, 2024, 2026],
+  perez: [2013, 2017, 2022, 2023, 2024, 2026],
   piastri: [2022, 2024, 2025, 2026],
   raikkonen: [2016, 2021],
   ricciardo: [2017, 2022, 2023, 2024],
@@ -469,8 +474,14 @@ const DRIVER_IMAGE_YEARS = {
   vandoorne: [2017, 2022],
   verstappen: [2017, 2022, 2023, 2024, 2025, 2026],
   vettel: [2015, 2019, 2020, 2022],
+  villeneuve: [2000],
   wehrlein: [2017],
+  webber: [2010],
   zhou: [2022, 2023, 2024]
+};
+
+const DRIVER_IMAGE_FILE_NAMES = {
+  j_verstappen: 'verstappen'
 };
 
 function closestAvailableImageYear(years, requestedYear) {
@@ -484,8 +495,9 @@ function closestAvailableImageYear(years, requestedYear) {
 }
 
 function getDriverImg(driverName, year) {
-  const imageName = getDriverImageGeneric(driverName);
-  const availableImageYears = DRIVER_IMAGE_YEARS[imageName];
+  const genericName = getDriverImageGeneric(driverName);
+  const imageName = DRIVER_IMAGE_FILE_NAMES[genericName] || genericName;
+  const availableImageYears = DRIVER_IMAGE_YEARS[genericName];
   if (!availableImageYears) return 'assets/drivers/unkown.png';
 
   const imageYear = closestAvailableImageYear(availableImageYears, Number(year));
