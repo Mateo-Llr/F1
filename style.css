@@ -900,6 +900,7 @@ button.primary {
 .season-layout { display: block; }
 .season-calendar, .season-ranking-container { min-width: 0; }
 .season-calendar { container-type: inline-size; }
+.season-calendar > .toolbar { margin-bottom: 48px; }
 .season-races-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 .empty { color: rgba(255,255,255,.55); font-style: italic; padding: 20px 0; }
 
